@@ -12,11 +12,14 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _taskController;
+  late TodoController todoController;
 
   @override
   void initState() {
     super.initState();
     _taskController = TextEditingController();
+    todoController = Get.find<TodoController>();
+    todoController.getData(); // Hanya dipanggil sekali
   }
 
   @override
@@ -28,37 +31,29 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<TodoController>(
-      init: Get.find<TodoController>(),
-      builder: (todoController) {
-        todoController.getData();
+      builder: (controller) {
         return Scaffold(
           body: Center(
-            child: todoController.isLoading
-                ? const SizedBox(
-                    child: CircularProgressIndicator(),
-                  )
+            child: controller.isLoading
+                ? const CircularProgressIndicator()
                 : ListView.builder(
-                    itemCount: todoController.taskList.length,
-                    itemBuilder: (contex, index) {
+                    itemCount: controller.taskList.length,
+                    itemBuilder: (context, index) {
+                      final task = controller.taskList[index];
                       return ListTile(
-                        title: Text(
-                          todoController.taskList[index].task,
-                        ),
+                        title: Text(task.task),
                         trailing: SizedBox(
                           width: 100,
                           child: Row(
                             children: [
                               IconButton(
-                                onPressed: () => addTaskDialog(
-                                    todocontroller,
-                                    'Update Task',
-                                    todoController.taskList[index].id),
-                                icon: Icon(Icons.edit),
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => addTaskDialog(task.id),
                               ),
                               IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () => print("delete"),
-                                icon: Icon(Icons.delete),
-                                color: Colors.red,
                               ),
                             ],
                           ),
@@ -68,19 +63,23 @@ class _HomeState extends State<Home> {
                   ),
           ),
           floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () async =>
-                await addTaskDialog(todocontroller, "Add Todo", ""),
+            onPressed: () => addTaskDialog(""),
+            child: const Icon(Icons.add),
           ),
         );
       },
     );
   }
 
-  void addTaskDialog(
-      TodoController todocontroller, String title, String id) async {
+  void addTaskDialog(String id) {
+    _taskController.clear();
+    if (id.isNotEmpty) {
+      final task = todoController.taskList.firstWhere((e) => e.id == id);
+      _taskController.text = task.task;
+    }
+
     Get.defaultDialog(
-      title: title,
+      title: id.isEmpty ? "Add Task" : "Update Task",
       content: Form(
         key: _formKey,
         child: Column(
@@ -88,7 +87,7 @@ class _HomeState extends State<Home> {
           children: [
             TextFormField(
               controller: _taskController,
-              decoration: InputDecoration(labelText: 'Task'),
+              decoration: const InputDecoration(labelText: 'Task'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return "Cannot be empty";
@@ -96,9 +95,9 @@ class _HomeState extends State<Home> {
                 return null;
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: addTask,
+              onPressed: () => addTask(id),
               child: const Text("Save"),
             ),
           ],
@@ -107,11 +106,11 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Future<void> addTask() async {
+  Future<void> addTask(String id) async {
     if (_formKey.currentState!.validate()) {
       try {
-        await Get.find<TodoController>()
-            .addTodo(_taskController.text.trim(), false, id);
+        await todoController.addTodo(_taskController.text.trim(), false, id);
+        Get.back();
         _taskController.clear();
       } catch (e) {
         Get.snackbar('Error', 'Failed to save todo: $e');

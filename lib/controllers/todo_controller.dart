@@ -36,18 +36,17 @@ class TodoController extends GetxController {
       for (var item in _taskSnap.docs) {
         taskList.add(
           TaskModel(
-            item.id,
+            id: item.id,
             task: item['task'],
             isDone: item['isDone'],
-            id: '',
           ),
         );
       }
 
       isLoading = false;
-      update(); // Notify UI
+      update();
     } catch (e) {
-      print(e.toString());
+      print("Error getting data: $e");
     }
   }
 }
