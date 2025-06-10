@@ -1,21 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/get_core.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 
 class TodoController extends GetxController {
-  Future<void> addTodo(
-    String task,
-    bool done,
-  ) async {
-    await FirebaseFirestore.instance.collection('todos').doc().set(
-      {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> addTodo(String task, bool done) async {
+    try {
+      await _firestore.collection('todos').add({
         'task': task,
         'isDone': done,
-      },
-      SetOptions(merge: true),
-    ).then(
-      (value) => Get.back(),
-    );
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      Get.back(); // Close the dialog after successful save
+      Get.snackbar('Success', 'Todo added successfully');
+    } catch (e) {
+      Get.back(); // Close the dialog even if there's an error
+      Get.snackbar('Error', 'Failed to add todo: $e');
+      rethrow;
+    }
   }
 }
