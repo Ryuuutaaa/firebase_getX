@@ -46,6 +46,12 @@ class _HomeState extends State<Home> {
                     itemBuilder: (context, index) {
                       final task = controller.taskList[index];
                       return ListTile(
+                        leading: Checkbox(
+                          onChanged: (value) => todoController.addTodo(
+                              todoController.taskList[index].task,
+                              !todoController.taskList[index].isDone,
+                              todoController.taskList[index].id),
+                        ),
                         title: Text(task.task),
                         trailing: SizedBox(
                           width: 100,
@@ -111,7 +117,8 @@ class _HomeState extends State<Home> {
                   false,
                   id,
                 ),
-                _taskController.clear()
+                _taskController.clear(),
+                Get.back(),
               },
               child: const Text("Save"),
             ),

@@ -14,7 +14,7 @@ class TodoController extends GetxController {
         'task': task,
         'isDone': done,
         'createdAt': FieldValue.serverTimestamp(),
-      });
+      }).then((value) => getData());
       Get.back(); // Close the dialog after successful save
       Get.snackbar('Success', 'Todo added successfully');
     } catch (e) {
