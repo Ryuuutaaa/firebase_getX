@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_getx/controller_bindings.dart';
 import 'package:firebase_getx/screens/intro.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const Intro(),
+      initialBinding: ControllerBindings(),
     );
   }
 }
