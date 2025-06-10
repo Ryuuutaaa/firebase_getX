@@ -59,7 +59,9 @@ class _HomeState extends State<Home> {
                               IconButton(
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => deleteTask(task.id),
+                                onPressed: () => todoController.deleteTask(
+                                  todoController.taskList[index].id,
+                                ),
                               ),
                             ],
                           ),

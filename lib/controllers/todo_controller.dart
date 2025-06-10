@@ -49,4 +49,8 @@ class TodoController extends GetxController {
       print("Error getting data: $e");
     }
   }
+
+  void deleteTask(String id) {
+    FirebaseFirestore.instance.collection('todos').doc(id).delete();
+  }
 }
