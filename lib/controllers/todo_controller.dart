@@ -8,9 +8,9 @@ class TodoController extends GetxController {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> addTodo(String task, bool done) async {
+  Future<void> addTodo(String task, bool done, String id) async {
     try {
-      await _firestore.collection('todos').add({
+      await _firestore.collection('todos').doc(id.isNotEmpty ? id : '').set({
         'task': task,
         'isDone': done,
         'createdAt': FieldValue.serverTimestamp(),
@@ -36,8 +36,10 @@ class TodoController extends GetxController {
       for (var item in _taskSnap.docs) {
         taskList.add(
           TaskModel(
+            item.id,
             task: item['task'],
             isDone: item['isDone'],
+            id: '',
           ),
         );
       }

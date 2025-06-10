@@ -49,7 +49,10 @@ class _HomeState extends State<Home> {
                           child: Row(
                             children: [
                               IconButton(
-                                onPressed: () => print("edit"),
+                                onPressed: () => addTaskDialog(
+                                    todocontroller,
+                                    'Update Task',
+                                    todoController.taskList[index].id),
                                 icon: Icon(Icons.edit),
                               ),
                               IconButton(
@@ -66,45 +69,53 @@ class _HomeState extends State<Home> {
           ),
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add),
-            onPressed: () => Get.defaultDialog(
-              title: "Add Todo",
-              content: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: _taskController,
-                      decoration: InputDecoration(labelText: 'Task'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Cannot be empty";
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          try {
-                            await controller.addTodo(
-                                _taskController.text.trim(), false);
-                            _taskController.clear();
-                          } catch (e) {
-                            Get.snackbar('Error', 'Failed to save todo: $e');
-                          }
-                        }
-                      },
-                      child: const Text("Save"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            onPressed: () async =>
+                await addTaskDialog(todocontroller, "Add Todo", ""),
           ),
         );
       },
     );
+  }
+
+  void addTaskDialog(
+      TodoController todocontroller, String title, String id) async {
+    Get.defaultDialog(
+      title: title,
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _taskController,
+              decoration: InputDecoration(labelText: 'Task'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Cannot be empty";
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: addTask,
+              child: const Text("Save"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> addTask() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await Get.find<TodoController>()
+            .addTodo(_taskController.text.trim(), false, id);
+        _taskController.clear();
+      } catch (e) {
+        Get.snackbar('Error', 'Failed to save todo: $e');
+      }
+    }
   }
 }
