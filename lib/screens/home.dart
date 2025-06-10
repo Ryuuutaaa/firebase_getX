@@ -21,7 +21,7 @@ class _HomeState extends State<Home> {
     super.initState();
     _taskController = TextEditingController();
     todoController = Get.find<TodoController>();
-    todoController.getData(); // Only called once
+    todoController.getData();
   }
 
   @override
@@ -47,13 +47,28 @@ class _HomeState extends State<Home> {
                       final task = controller.taskList[index];
                       return ListTile(
                         leading: Checkbox(
-                          value: task.isDone, // Perbaikan 1: Tambahkan value
-                          onChanged: (value) => todoController.addTodo(
-                              task.task, // Perbaikan 2: Gunakan task langsung
-                              value ?? false, // Perbaikan 3: Handle null value
-                              task.id),
+                          value: task.isDone,
+                          onChanged: (value) async {
+                            await todoController.addTodo(
+                              task.task,
+                              value ?? false,
+                              task.id,
+                            );
+                            Get.snackbar(
+                              'Status Diubah',
+                              'Tugas "${task.task}" telah diupdate',
+                              backgroundColor: Colors.green[100],
+                            );
+                          },
                         ),
-                        title: Text(task.task),
+                        title: Text(
+                          task.task,
+                          style: TextStyle(
+                            decoration: task.isDone
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
+                        ),
                         trailing: SizedBox(
                           width: 100,
                           child: Row(
@@ -65,8 +80,37 @@ class _HomeState extends State<Home> {
                               IconButton(
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () =>
-                                    todoController.deleteTask(task.id),
+                                onPressed: () async {
+                                  final confirm = await Get.dialog<bool>(
+                                    AlertDialog(
+                                      title: const Text('Konfirmasi Hapus'),
+                                      content:
+                                          Text('Hapus tugas "${task.task}"?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Get.back(result: false),
+                                          child: const Text('Batal'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Get.back(result: true),
+                                          child: const Text('Hapus',
+                                              style:
+                                                  TextStyle(color: Colors.red)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    todoController.deleteTask(task.id);
+                                    Get.snackbar(
+                                      'Dihapus',
+                                      'Tugas "${task.task}" telah dihapus',
+                                      backgroundColor: Colors.red[100],
+                                    );
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -92,7 +136,7 @@ class _HomeState extends State<Home> {
     }
 
     Get.defaultDialog(
-      title: id.isEmpty ? "Add Task" : "Update Task",
+      title: id.isEmpty ? "Tambah Tugas" : "Edit Tugas",
       content: Form(
         key: _formKey,
         child: Column(
@@ -103,16 +147,15 @@ class _HomeState extends State<Home> {
               decoration: const InputDecoration(labelText: 'Task'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Cannot be empty";
+                  return "Tidak boleh kosong";
                 }
                 return null;
               },
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () =>
-                  addTask(id), // Perbaikan 4: Panggil addTask yang sudah ada
-              child: const Text("Save"),
+              onPressed: () => addTask(id),
+              child: const Text("Simpan"),
             ),
           ],
         ),
@@ -123,9 +166,10 @@ class _HomeState extends State<Home> {
   Future<void> addTask(String id) async {
     if (_formKey.currentState!.validate()) {
       try {
+        final isUpdate = id.isNotEmpty;
         await todoController.addTodo(
           _taskController.text.trim(),
-          id.isNotEmpty // Perbaikan 5: Periksa status isDone hanya jika mengupdate
+          isUpdate
               ? todoController.taskList
                   .firstWhere(
                     (e) => e.id == id,
@@ -135,13 +179,24 @@ class _HomeState extends State<Home> {
               : false,
           id,
         );
+
         Get.back();
         _taskController.clear();
+
+        Get.snackbar(
+          isUpdate ? 'Diupdate' : 'Ditambahkan',
+          isUpdate
+              ? 'Tugas berhasil diupdate'
+              : 'Tugas baru berhasil ditambahkan',
+          backgroundColor: Colors.green[100],
+        );
       } catch (e) {
-        Get.snackbar('Error', 'Failed to save todo: $e');
+        Get.snackbar(
+          'Error',
+          'Gagal menyimpan: $e',
+          backgroundColor: Colors.red[100],
+        );
       }
     }
   }
-
-  // Perbaikan 6: Hapus metode deleteTask yang tidak perlu karena sudah menggunakan controller langsung
 }
