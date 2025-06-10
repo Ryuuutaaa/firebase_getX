@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_getx/models/task_model.dart';
 import 'package:get/get.dart';
 
 class TodoController extends GetxController {
+  var isLoading = false;
+  var taskList = <TaskModel>[];
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> addTodo(String task, bool done) async {
@@ -17,6 +21,31 @@ class TodoController extends GetxController {
       Get.back(); // Close the dialog even if there's an error
       Get.snackbar('Error', 'Failed to add todo: $e');
       rethrow;
+    }
+  }
+
+  Future<void> getData() async {
+    try {
+      QuerySnapshot _taskSnap = await FirebaseFirestore.instance
+          .collection("todos")
+          .orderBy("task")
+          .get();
+
+      taskList.clear();
+
+      for (var item in _taskSnap.docs) {
+        taskList.add(
+          TaskModel(
+            task: item['task'],
+            isDone: item['isDone'],
+          ),
+        );
+      }
+
+      isLoading = false;
+      update(); // Notify UI
+    } catch (e) {
+      print(e.toString());
     }
   }
 }
