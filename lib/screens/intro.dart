@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:introduction_screen/introduction_screen.dart';
+
+import 'home.dart';
 
 class Intro extends StatelessWidget {
   const Intro({super.key});
