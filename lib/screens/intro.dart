@@ -17,7 +17,7 @@ class Intro extends StatelessWidget {
       showDoneButton: true,
       showSkipButton: false,
       done: const Text("Done"),
-      onDone: () => Get.to(() => Home()),
+      onDone: () => Get.to(() => const Home()),
       next: const Icon(Icons.arrow_forward),
       pages: [
         PageViewModel(

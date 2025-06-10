@@ -13,8 +13,10 @@ class Home extends StatelessWidget {
       body: Center(
         child: Text("Home"),
       ),
-      floatingActionButton:
-          FloatingActionButton(onPressed: () => todoController.addTodo()),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => todoController.addTodo(),
+      ),
     );
   }
 }
