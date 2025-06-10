@@ -2,6 +2,8 @@ import 'package:firebase_getx/controllers/todo_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../models/task_model.dart';
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -19,7 +21,7 @@ class _HomeState extends State<Home> {
     super.initState();
     _taskController = TextEditingController();
     todoController = Get.find<TodoController>();
-    todoController.getData(); // Hanya dipanggil sekali
+    todoController.getData(); // Only called once
   }
 
   @override
@@ -33,6 +35,9 @@ class _HomeState extends State<Home> {
     return GetBuilder<TodoController>(
       builder: (controller) {
         return Scaffold(
+          appBar: AppBar(
+            title: const Text('Todo List'),
+          ),
           body: Center(
             child: controller.isLoading
                 ? const CircularProgressIndicator()
@@ -48,12 +53,13 @@ class _HomeState extends State<Home> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.edit),
-                                onPressed: () => addTaskDialog(task.id),
+                                onPressed: () => addTaskDialog(
+                                    todoController.taskList[index].id),
                               ),
                               IconButton(
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => print("delete"),
+                                onPressed: () => deleteTask(task.id),
                               ),
                             ],
                           ),
@@ -109,12 +115,26 @@ class _HomeState extends State<Home> {
   Future<void> addTask(String id) async {
     if (_formKey.currentState!.validate()) {
       try {
-        await todoController.addTodo(_taskController.text.trim(), false, id);
+        await todoController.addTodo(
+          _taskController.text.trim(),
+          todoController.taskList
+              .firstWhere(
+                (e) => e.id == id,
+                orElse: () => TaskModel(id: '', task: '', isDone: false),
+              )
+              .isDone,
+          id,
+        );
         Get.back();
         _taskController.clear();
       } catch (e) {
         Get.snackbar('Error', 'Failed to save todo: $e');
       }
     }
+  }
+
+  void deleteTask(String id) {
+    todoController.taskList.removeWhere((task) => task.id == id);
+    todoController.update();
   }
 }

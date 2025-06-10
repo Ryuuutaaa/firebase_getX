@@ -3,5 +3,9 @@ class TaskModel {
   String task;
   bool isDone;
 
-  TaskModel({required this.task, required this.isDone, required this.id});
+  TaskModel({
+    this.id = '',
+    this.task = '',
+    this.isDone = false,
+  });
 }
