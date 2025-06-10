@@ -47,10 +47,11 @@ class _HomeState extends State<Home> {
                       final task = controller.taskList[index];
                       return ListTile(
                         leading: Checkbox(
+                          value: task.isDone, // Perbaikan 1: Tambahkan value
                           onChanged: (value) => todoController.addTodo(
-                              todoController.taskList[index].task,
-                              !todoController.taskList[index].isDone,
-                              todoController.taskList[index].id),
+                              task.task, // Perbaikan 2: Gunakan task langsung
+                              value ?? false, // Perbaikan 3: Handle null value
+                              task.id),
                         ),
                         title: Text(task.task),
                         trailing: SizedBox(
@@ -59,15 +60,13 @@ class _HomeState extends State<Home> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.edit),
-                                onPressed: () => addTaskDialog(
-                                    todoController.taskList[index].id),
+                                onPressed: () => addTaskDialog(task.id),
                               ),
                               IconButton(
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => todoController.deleteTask(
-                                  todoController.taskList[index].id,
-                                ),
+                                onPressed: () =>
+                                    todoController.deleteTask(task.id),
                               ),
                             ],
                           ),
@@ -111,15 +110,8 @@ class _HomeState extends State<Home> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () async => {
-                await todoController.addTodo(
-                  _taskController.text.trim(),
-                  false,
-                  id,
-                ),
-                _taskController.clear(),
-                Get.back(),
-              },
+              onPressed: () =>
+                  addTask(id), // Perbaikan 4: Panggil addTask yang sudah ada
               child: const Text("Save"),
             ),
           ],
@@ -133,12 +125,14 @@ class _HomeState extends State<Home> {
       try {
         await todoController.addTodo(
           _taskController.text.trim(),
-          todoController.taskList
-              .firstWhere(
-                (e) => e.id == id,
-                orElse: () => TaskModel(id: '', task: '', isDone: false),
-              )
-              .isDone,
+          id.isNotEmpty // Perbaikan 5: Periksa status isDone hanya jika mengupdate
+              ? todoController.taskList
+                  .firstWhere(
+                    (e) => e.id == id,
+                    orElse: () => TaskModel(id: '', task: '', isDone: false),
+                  )
+                  .isDone
+              : false,
           id,
         );
         Get.back();
@@ -149,8 +143,5 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void deleteTask(String id) {
-    todoController.taskList.removeWhere((task) => task.id == id);
-    todoController.update();
-  }
+  // Perbaikan 6: Hapus metode deleteTask yang tidak perlu karena sudah menggunakan controller langsung
 }
