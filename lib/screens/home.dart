@@ -103,7 +103,14 @@ class _HomeState extends State<Home> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => addTask(id),
+              onPressed: () async => {
+                await todoController.addTodo(
+                  _taskController.text.trim(),
+                  false,
+                  id,
+                ),
+                _taskController.clear()
+              },
               child: const Text("Save"),
             ),
           ],

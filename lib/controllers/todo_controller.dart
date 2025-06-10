@@ -10,7 +10,7 @@ class TodoController extends GetxController {
 
   Future<void> addTodo(String task, bool done, String id) async {
     try {
-      await _firestore.collection('todos').doc(id.isNotEmpty ? id : '').set({
+      await _firestore.collection('todos').doc(id != '' ? id : null).set({
         'task': task,
         'isDone': done,
         'createdAt': FieldValue.serverTimestamp(),
